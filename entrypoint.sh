@@ -5,7 +5,7 @@ echo "  Starting Proxy Services"
 echo "========================================"
 
 # 设置 UUID
-UUID=${UUID:-"4d5be0ce-1f3d-4ffb-8d88-2e80bccb9c9a"}
+UUID=${UUID:-"ffb1b66c-c092-4da6-869f-bc482eaf7270"}
 
 echo "[Info] UUID: ${UUID:0:8}..."
 
@@ -21,22 +21,10 @@ echo "[Info] Validating Xray configuration..."
 
 if [ $? -ne 0 ]; then
     echo "[Error] Xray configuration is invalid!"
-    cat /app/config.json
     exit 1
 fi
 
 echo "[Info] Configuration is valid."
-
-# 测试 DNS 解析
-echo "[Info] Testing DNS resolution..."
-echo "  - Google: $(nslookup -timeout=3 google.com 8.8.8.8 2>/dev/null | grep -A1 'Name:' | tail -1 || echo 'FAILED')"
-echo "  - YouTube: $(nslookup -timeout=3 youtube.com 8.8.8.8 2>/dev/null | grep -A1 'Name:' | tail -1 || echo 'FAILED')"
-echo "  - Googlevideo: $(nslookup -timeout=3 r1---sn-a5mekn7k.googlevideo.com 8.8.8.8 2>/dev/null | grep -A1 'Name:' | tail -1 || echo 'FAILED')"
-
-# 测试出站连接
-echo "[Info] Testing outbound connectivity..."
-echo "  - Google: $(wget -q -O /dev/null --timeout=5 https://www.google.com && echo 'OK' || echo 'FAILED')"
-echo "  - YouTube: $(wget -q -O /dev/null --timeout=5 https://www.youtube.com && echo 'OK' || echo 'FAILED')"
 
 # 启动 Nginx
 echo "[Info] Starting Nginx..."
@@ -48,22 +36,6 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "[Info] Nginx started successfully."
-
-# 后台监控日志
-(
-    sleep 10
-    while true; do
-        if [ -f /tmp/xray-access.log ]; then
-            echo "[Xray Access Log - Last 5 lines]"
-            tail -5 /tmp/xray-access.log
-        fi
-        if [ -f /tmp/xray-error.log ]; then
-            echo "[Xray Error Log - Last 5 lines]"
-            tail -5 /tmp/xray-error.log
-        fi
-        sleep 60
-    done
-) &
 
 # 启动 Xray
 echo "[Info] Starting Xray..."
