@@ -33,6 +33,7 @@ WORKDIR /app
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY config.json /app/config.json
 COPY entrypoint.sh /app/entrypoint.sh
+COPY index.html ./
 
 # 设置权限
 RUN chmod +x /app/entrypoint.sh
