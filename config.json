@@ -1,7 +1,46 @@
 {
   "log": {
-    "loglevel": "warning",
-    "access": "none"
+    "loglevel": "debug",
+    "access": "/tmp/xray-access.log",
+    "error": "/tmp/xray-error.log"
+  },
+  "dns": {
+    "hosts": {
+      "dns.google": "8.8.8.8",
+      "dns.pub": "119.29.29.29",
+      "dns.alidns.com": "223.5.5.5",
+      "geosite:category-ads-all": "127.0.0.1"
+    },
+    "servers": [
+      {
+        "address": "https://1.1.1.1/dns-query",
+        "domains": [
+          "geosite:geolocation-!cn",
+          "geosite:google",
+          "geosite:youtube",
+          "domain:youtube.com",
+          "domain:googlevideo.com",
+          "domain:ytimg.com",
+          "domain:ggpht.com",
+          "domain:googleapis.com",
+          "domain:gstatic.com"
+        ],
+        "skipFallback": true,
+        "queryStrategy": "UseIPv4"
+      },
+      {
+        "address": "8.8.8.8",
+        "domains": [
+          "geosite:geolocation-!cn"
+        ],
+        "skipFallback": false
+      },
+      "1.1.1.1",
+      "8.8.4.4"
+    ],
+    "queryStrategy": "UseIPv4",
+    "disableCache": false,
+    "tag": "dns-internal"
   },
   "inbounds": [
     {
@@ -22,12 +61,16 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/vless-ws"
+          "path": "/vless-ws",
+          "maxEarlyData": 2048,
+          "browserForwarding": false
         }
       },
       "sniffing": {
         "enabled": true,
-        "destOverride": ["http", "tls"]
+        "destOverride": ["http", "tls"],
+        "metadataOnly": false,
+        "routeOnly": false
       }
     },
     {
@@ -39,8 +82,7 @@
         "clients": [
           {
             "id": "UUID_PLACEHOLDER",
-            "alterId": 0,
-            "security": "auto"
+            "alterId": 0
           }
         ]
       },
@@ -48,12 +90,16 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/vmess-ws"
+          "path": "/vmess-ws",
+          "maxEarlyData": 2048,
+          "browserForwarding": false
         }
       },
       "sniffing": {
         "enabled": true,
-        "destOverride": ["http", "tls"]
+        "destOverride": ["http", "tls"],
+        "metadataOnly": false,
+        "routeOnly": false
       }
     },
     {
@@ -72,12 +118,16 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/trojan-ws"
+          "path": "/trojan-ws",
+          "maxEarlyData": 2048,
+          "browserForwarding": false
         }
       },
       "sniffing": {
         "enabled": true,
-        "destOverride": ["http", "tls"]
+        "destOverride": ["http", "tls"],
+        "metadataOnly": false,
+        "routeOnly": false
       }
     },
     {
@@ -86,20 +136,24 @@
       "listen": "127.0.0.1",
       "protocol": "shadowsocks",
       "settings": {
-        "method": "2022-blake3-aes-128-gcm",
-        "password": "SS_PASSWORD_PLACEHOLDER",
-        "network": "tcp,udp"
+        "method": "chacha20-ietf-poly1305",
+        "password": "UUID_PLACEHOLDER",
+        "network": "tcp"
       },
       "streamSettings": {
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/ss-ws"
+          "path": "/ss-ws",
+          "maxEarlyData": 2048,
+          "browserForwarding": false
         }
       },
       "sniffing": {
         "enabled": true,
-        "destOverride": ["http", "tls"]
+        "destOverride": ["http", "tls"],
+        "metadataOnly": false,
+        "routeOnly": false
       }
     }
   ],
@@ -108,22 +162,58 @@
       "tag": "direct",
       "protocol": "freedom",
       "settings": {
-        "domainStrategy": "UseIPv4"
+        "domainStrategy": "UseIPv4",
+        "userLevel": 0
       }
     },
     {
       "tag": "blocked",
       "protocol": "blackhole",
-      "settings": {}
+      "settings": {
+        "response": {
+          "type": "http"
+        }
+      }
+    },
+    {
+      "tag": "dns-out",
+      "protocol": "dns",
+      "settings": {
+        "address": "8.8.8.8",
+        "port": 53
+      }
     }
   ],
   "routing": {
-    "domainStrategy": "IPIfNonMatch",
+    "domainStrategy": "AsIs",
     "rules": [
       {
         "type": "field",
-        "ip": ["geoip:private"],
+        "inboundTag": ["vless-ws-in", "vmess-ws-in", "trojan-ws-in", "ss-ws-in"],
+        "port": 53,
+        "network": "udp",
+        "outboundTag": "dns-out"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "domain:huggingface.co",
+          "domain:hf.space",
+          "domain:huggingface.com"
+        ],
         "outboundTag": "blocked"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "blocked"
+      },
+      {
+        "type": "field",
+        "network": "tcp,udp",
+        "outboundTag": "direct"
       }
     ]
   }
