@@ -1,46 +1,16 @@
 {
   "log": {
-    "loglevel": "debug",
-    "access": "/tmp/xray-access.log",
-    "error": "/tmp/xray-error.log"
+    "loglevel": "warning",
+    "access": "none"
   },
   "dns": {
-    "hosts": {
-      "dns.google": "8.8.8.8",
-      "dns.pub": "119.29.29.29",
-      "dns.alidns.com": "223.5.5.5",
-      "geosite:category-ads-all": "127.0.0.1"
-    },
     "servers": [
-      {
-        "address": "https://1.1.1.1/dns-query",
-        "domains": [
-          "geosite:geolocation-!cn",
-          "geosite:google",
-          "geosite:youtube",
-          "domain:youtube.com",
-          "domain:googlevideo.com",
-          "domain:ytimg.com",
-          "domain:ggpht.com",
-          "domain:googleapis.com",
-          "domain:gstatic.com"
-        ],
-        "skipFallback": true,
-        "queryStrategy": "UseIPv4"
-      },
-      {
-        "address": "8.8.8.8",
-        "domains": [
-          "geosite:geolocation-!cn"
-        ],
-        "skipFallback": false
-      },
-      "1.1.1.1",
-      "8.8.4.4"
+      "https://1.1.1.1/dns-query",
+      "https://dns.google/dns-query",
+      "8.8.8.8",
+      "1.1.1.1"
     ],
-    "queryStrategy": "UseIPv4",
-    "disableCache": false,
-    "tag": "dns-internal"
+    "queryStrategy": "UseIPv4"
   },
   "inbounds": [
     {
@@ -61,16 +31,12 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/vless-ws",
-          "maxEarlyData": 2048,
-          "browserForwarding": false
+          "path": "/vless-ws"
         }
       },
       "sniffing": {
         "enabled": true,
-        "destOverride": ["http", "tls"],
-        "metadataOnly": false,
-        "routeOnly": false
+        "destOverride": ["http", "tls"]
       }
     },
     {
@@ -90,16 +56,12 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/vmess-ws",
-          "maxEarlyData": 2048,
-          "browserForwarding": false
+          "path": "/vmess-ws"
         }
       },
       "sniffing": {
         "enabled": true,
-        "destOverride": ["http", "tls"],
-        "metadataOnly": false,
-        "routeOnly": false
+        "destOverride": ["http", "tls"]
       }
     },
     {
@@ -118,16 +80,12 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/trojan-ws",
-          "maxEarlyData": 2048,
-          "browserForwarding": false
+          "path": "/trojan-ws"
         }
       },
       "sniffing": {
         "enabled": true,
-        "destOverride": ["http", "tls"],
-        "metadataOnly": false,
-        "routeOnly": false
+        "destOverride": ["http", "tls"]
       }
     },
     {
@@ -144,16 +102,12 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/ss-ws",
-          "maxEarlyData": 2048,
-          "browserForwarding": false
+          "path": "/ss-ws"
         }
       },
       "sniffing": {
         "enabled": true,
-        "destOverride": ["http", "tls"],
-        "metadataOnly": false,
-        "routeOnly": false
+        "destOverride": ["http", "tls"]
       }
     }
   ],
@@ -162,26 +116,13 @@
       "tag": "direct",
       "protocol": "freedom",
       "settings": {
-        "domainStrategy": "UseIPv4",
-        "userLevel": 0
+        "domainStrategy": "UseIPv4"
       }
     },
     {
       "tag": "blocked",
       "protocol": "blackhole",
-      "settings": {
-        "response": {
-          "type": "http"
-        }
-      }
-    },
-    {
-      "tag": "dns-out",
-      "protocol": "dns",
-      "settings": {
-        "address": "8.8.8.8",
-        "port": 53
-      }
+      "settings": {}
     }
   ],
   "routing": {
@@ -189,25 +130,14 @@
     "rules": [
       {
         "type": "field",
-        "inboundTag": ["vless-ws-in", "vmess-ws-in", "trojan-ws-in", "ss-ws-in"],
-        "port": 53,
-        "network": "udp",
-        "outboundTag": "dns-out"
-      },
-      {
-        "type": "field",
         "domain": [
-          "domain:huggingface.co",
-          "domain:hf.space",
-          "domain:huggingface.com"
+          "domain:omillm-omispace.hf.space"
         ],
         "outboundTag": "blocked"
       },
       {
         "type": "field",
-        "ip": [
-          "geoip:private"
-        ],
+        "ip": ["geoip:private"],
         "outboundTag": "blocked"
       },
       {
