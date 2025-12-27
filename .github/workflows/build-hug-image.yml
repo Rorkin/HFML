@@ -1,0 +1,53 @@
+name: Sync to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  HF_USERNAME: ${{ secrets.HF_USERNAME }}
+  HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Check Secrets
+        run: |
+          if [ -z "${{ secrets.HF_TOKEN }}" ]; then
+            echo "Error: HF_TOKEN is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.HF_USERNAME }}" ]; then
+            echo "Error: HF_USERNAME is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.HF_SPACE_NAME }}" ]; then
+            echo "Error: HF_SPACE_NAME is not set"
+            exit 1
+          fi
+          echo "All secrets are configured correctly."
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          
+          # 添加 HF 远程仓库
+          git remote add space https://${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ secrets.HF_USERNAME }}/${{ secrets.HF_SPACE_NAME }} || true
+          
+          # 强制推送到 HF
+          git push --force space main:main
+          
+          echo "✅ Successfully pushed to Hugging Face Space!"
+          echo "🔗 Space URL: https://huggingface.co/spaces/${{ secrets.HF_USERNAME }}/${{ secrets.HF_SPACE_NAME }}"
