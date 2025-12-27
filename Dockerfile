@@ -1,16 +1,18 @@
 FROM alpine:3.19
 
-# 安装必要工具
+# 安装必要工具（添加诊断工具）
 RUN apk add --no-cache \
     wget \
     unzip \
     ca-certificates \
     nginx \
     bash \
-    tzdata
+    tzdata \
+    bind-tools \
+    curl
 
 # 设置时区
-ENV TZ=America/Los_Angeles
+ENV TZ=Asia/Shanghai
 
 # Xray 版本
 ARG XRAY_VERSION=1.8.24
@@ -25,7 +27,7 @@ RUN mkdir -p /tmp/xray && \
     rm -rf /tmp/xray
 
 # 创建工作目录
-RUN mkdir -p /app/web /var/log/nginx /var/lib/nginx/tmp /run/nginx /tmp/nginx
+RUN mkdir -p /app/web /var/log/nginx /var/lib/nginx/tmp /run/nginx /tmp/nginx /tmp
 
 WORKDIR /app
 
@@ -44,7 +46,7 @@ RUN adduser -D -u 1000 user && \
     chown -R user:user /var/log/nginx && \
     chown -R user:user /var/lib/nginx && \
     chown -R user:user /run/nginx && \
-    chown -R user:user /tmp/nginx
+    chown -R user:user /tmp
 
 USER user
 
