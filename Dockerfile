@@ -10,12 +10,12 @@ RUN apk add --no-cache \
     tzdata
 
 # 设置时区
-ENV TZ=Asia/Shanghai
+ENV TZ=America/Los_Angeles
 
 # Xray 版本
 ARG XRAY_VERSION=1.8.24
 
-# 下载并安装 Xray（修正解压方式）
+# 下载并安装 Xray
 RUN mkdir -p /tmp/xray && \
     wget -O /tmp/xray/xray.zip "https://github.com/XTLS/Xray-core/releases/download/v${XRAY_VERSION}/Xray-linux-64.zip" && \
     unzip /tmp/xray/xray.zip -d /tmp/xray && \
@@ -24,8 +24,8 @@ RUN mkdir -p /tmp/xray && \
     chmod +x /usr/local/bin/xray && \
     rm -rf /tmp/xray
 
-# 创建工作目录和必要目录
-RUN mkdir -p /app /var/log/nginx /var/lib/nginx/tmp /run/nginx /tmp/nginx
+# 创建工作目录
+RUN mkdir -p /app/web /var/log/nginx /var/lib/nginx/tmp /run/nginx /tmp/nginx
 
 WORKDIR /app
 
@@ -33,12 +33,12 @@ WORKDIR /app
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY config.json /app/config.json
 COPY entrypoint.sh /app/entrypoint.sh
-COPY index.html ./
+COPY web/ /app/web/
 
 # 设置权限
 RUN chmod +x /app/entrypoint.sh
 
-# 创建非 root 用户并设置权限（HF 要求）
+# 创建非 root 用户并设置权限
 RUN adduser -D -u 1000 user && \
     chown -R user:user /app && \
     chown -R user:user /var/log/nginx && \
